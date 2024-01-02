@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+.header {
+  width: 100%;
+  border: 1px solid blue;
+  border-bottom: none;
+  padding: 10px;
+  font-size: larger
+}
+
+.main {
+  width: 40%;
+  float: left;
+  padding: 15px;
+  border: 0px solid blue;
+}
+.battingTeamBoard {
+  width: 30%;
+  float: left;
+  padding: 15px;
+  border: 0px solid blue;
+}
+
+.awayTeamscoreboard {
+  width: 30%;
+  float: right;
+  padding: 15px;
+  border: 0px solid blue;
+}
+
+.scoreboard {
+  border: 1px solid blue;
+  border-top: none;
+  padding: 10px;
+  font-size: large
+  
+}
+.pitchCounter {
+  width: 50%;
+  float: right;
+  border: 1px solid blue;
+  border-top: none;
+  padding: 10px;
+  font-size: large
+}
+
+
+</style>
+</head>
+<body>
+<tr>
+  <td colspan="2">
+    <div class="header">
+      <p>Major League Baseball</p>
+      <p id="currentSetting"></p>
+  
+      <button id="setGameButton" onclick="setGame()">Game Setting</button>
+      <button id="startGameButton" onclick="startGame()">Playball!</button>
+    </div>
+  </td>
+</tr>
+
+
+
+<div class="scoreboard">
+  <table>
+    <tr>
+      <th></th>
+      <th id="innings_display"></th>
+      <th></th>
+      <th></th>
+      <th>  RUNS  </th>
+    </tr>
+    <tr>
+      <td>Away:</td>
+      <td id="awayTeam_scoreByInnings"></td>
+      <td></td>
+      <td></td>
+      <td id="away_score"></td>
+      <td id="away_hitcount"></td>
+    </tr>
+    <tr>
+      <td>Home:</td>
+      <td id="homeTeam_scoreByInnings"></td>
+      <td></td>
+      <td></td>
+      <td id="home_score"></td>
+      <td id="home_hitcount"></td>
+    </tr>
+  </table>
+</div>
+
+<div class="battingTeamBoard">
+  <ul>
+    <p id="battingTeamName"></p>
+    <p id="battingTeamLogo"></p>
+
+</div>
+
+<div class="main">
+    <button id=batButton onclick="bat()">Bat</button>
+    <button id=missButton onclick="miss()">Miss</button>
+    <button id=pitchButton onclick="pitch()">Pitch</button>
+    <p id="matchTV"></p>
+    <p id="matchsetting"></p>
+    <p id="startgame" style="color:red"></p>
+    <p id="batMessage" style="color:red"></p>
+    <p id="pitchResult" style="color:red"></p>
+</div>
+
+<div class="awayTeamscoreboard">
+    <p>Field Status</p>
+    <p id="fieldStatus"></p>
+    <p id="batMessage2" style="color:blue"></p>
+ 
+</div>
+
+
+<script>
+  // General Variables
+    var tempTeamName="tempName";
+    var gameStarted = false;
+    var battingStarted = false;
+    var battingTeam = "Away";
+    var batMessage="";
+    var topOrBottom="Top";
+    var inning=1;
+    var inningsArray=[1,2,3,4,5,6,7,8,9];
+    var inningsDisplay=inningsArray.join(' . ');
+    var ballCount=0;
+    var strikeCount=0;
+    var outCount=0;
+    var pitchType="No Pitch"
+    var basesArray=[0,0,0];
+    var runnerOnBase=basesArray.reduce(sumArray);
+    var runScored=0;
+    var runScoredInnings=0;
+    
+
+
+  //Team 1 variables
+    var homeTeamName = "Toronto Blue Jays";
+    var homeTeamScoreByInnings=[0];
+    var homeTeamScoreByInningsDisplay
+  // Team 2 variables
+    var awayTeamName="Arizona Diamondbacks";
+    var awayTeamScoreByInnings=[0];
+    var awayTeamScoreByInningsDisplay
+
+    document.getElementById("batButton").disabled = true;
+    document.getElementById("pitchButton").disabled = true;
+    document.getElementById("missButton").disabled = true;
+    document.getElementById("currentSetting").innerHTML = homeTeamName + " - vs - " + awayTeamName + " , " + "Inning = " + topOrBottom + " of " + inning + " Bases: " +basesArray;
+    document.getElementById("battingTeamName").innerHTML = "Batting Side " + awayTeamName;
+    document.getElementById("innings_display").innerHTML=inningsDisplay;
+    document.getElementById("battingTeamLogo").innerHTML = "<img src='mlblogo.png' width='120' height='120'>";
+    //document.getElementById("fieldStatus").innerHTML = "<img src='emptyfield.jpg  ' width='300' height='300'>";
+    showFieldStatus();
+ /*
+    document.getElementById("homeTeam_scoreByInnings").innerHTML=homeTeamScoreByInningsDisplay;
+    document.getElementById("awayTeam_scoreByInnings").innerHTML=awayTeamScoreByInningsDisplay;
+    */
+    /*
+    Setup game board
+    */
+    document.getElementById("matchTV").innerHTML = "<img src='totheplate.png' width='300' height='300'>";
+    //document.getElementById("1stSeperator").innerHTML = "-------------------";
+    document.getElementById("startgame").innerHTML = "Click on Playball!! to start";
+    
+    
+    function setGame() {
+        if (gameStarted != true){
+        //updateScore();
+        //numberOfOvers = prompt("How many Overs do you want to play? \n Enter a number greater than 0", numberOfOvers);
+        homeTeamName = prompt("Home Team Name: ", homeTeamName);
+        //document.getElementById("homeTeamName").innerHTML = "Team 1: Waiting for Coin Toss";
+        awayTeamName = prompt("Away Team Name: ", awayTeamName);
+        document.getElementById("currentSetting").innerHTML = homeTeamName + " - vs - " + awayTeamName + " , " + "Inning = " + topOrBottom + " of " + inning + " Bases: " +basesArray;
+        document.getElementById("battingTeamName").innerHTML = "Batting Side " + awayTeamName;
+        }  
+    }
+    function startGame() {
+                //awayTeamScoreByInnings.push(0); 
+                document.getElementById("away_score").innerHTML = awayTeamScoreByInnings.reduce(sumArray);
+                document.getElementById("battingTeamLogo").innerHTML = "<img src='diamondbackslogo.jpg' width='120' height='120'>";
+                
+                document.getElementById("matchTV").innerHTML = "<img src='totheplate.png' width='300' height='300'>";
+                //updateScore();
+                if (gameStarted != true){
+                    gameStarted=true;
+                    document.getElementById("startGameButton").disabled = true;
+                    document.getElementById("setGameButton").disabled = true;
+                    document.getElementById("startgame").innerHTML = "Game Started! Playball";
+                    document.getElementById("batButton").disabled = true;
+                    document.getElementById("pitchButton").disabled = false;
+                    document.getElementById("missButton").disabled = true;
+                  } 
+                else window.alert("Game has already started");
+                document.getElementById("startGameButton").disabled = true;
+                
+    }
+    function getRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+
+    function pitch(){
+      var pitchResult = getRandomInt(3);
+      document.getElementById("matchTV").innerHTML = "<img src='pitching2.png' width='300' height='300'>";
+      document.getElementById("startgame").innerHTML = "  ";
+      batMessage="";
+      document.getElementById("batMessage").innerHTML = batMessage;
+      document.getElementById("batButton").disabled = false;
+      document.getElementById("pitchButton").disabled = true;
+      document.getElementById("missButton").disabled = false;
+      if (pitchResult==0){
+        pitchType="Ball"
+      }
+      else{
+      pitchType="Strike"
+      }
+      document.getElementById("pitchResult").innerHTML = "Balls " + ballCount + " Strikes: " + strikeCount + " Outs: " + outCount;
+      //document.getElementById("matchTV").innerHTML = "<img src='baseballLogo.png' width='400' height='300'>";
+    }  
+    function miss(){
+      document.getElementById("batButton").disabled = true;
+      document.getElementById("pitchButton").disabled = false;
+      document.getElementById("missButton").disabled = true;
+      if (pitchType=="Ball"){
+        ballCount=ballCount+1;
+        document.getElementById("matchTV").innerHTML = "<img src='ball.png' width='300' height='300'>";
+        batMessage = "Ball";
+        document.getElementById("batMessage").innerHTML = batMessage;
+        if (ballCount==4){
+          batMessage="Walk"
+          //document.getElementById("matchTV").innerHTML = "<img src='walk.gif' width='300' height='300'>";
+          document.getElementById("batMessage").innerHTML = batMessage;
+          runScored=runScored + basesArray.shift();
+          basesArray.push(1);
+          showFieldStatus();
+          strikeCount=0;
+          ballCount=0;
+          //updateScore();
+        }
+      }
+      else{
+        strikeCount=strikeCount+1;
+        document.getElementById("matchTV").innerHTML = "<img src='strike.png' width='300' height='300'>";
+        batMessage = "Stttrike !!!";
+        document.getElementById("batMessage").innerHTML = batMessage;
+        if (strikeCount==3){
+          strikeCount=0;
+          ballCount=0;
+          updateOut();
+        }
+      }
+      document.getElementById("pitchResult").innerHTML = "Balls " + ballCount + " Strikes: " + strikeCount + " Outs: " + outCount;
+      updateScore();
+    }  
+     
+
+    function bat() {
+      runScored=0;
+      document.getElementById("batButton").disabled = true;
+      document.getElementById("pitchButton").disabled = false;
+      document.getElementById("missButton").disabled = true;
+      var batResult = getRandomInt(10);
+      if (pitchType=="Strike"){
+      switch (batResult) {
+        case 0: //Swing and a Miss
+        batMessage = "Swing and a Miss....Strike!!!";
+        document.getElementById("matchTV").innerHTML = "<img src='swingmiss.png' width='300' height='300'>";
+        if (strikeCount<2){
+          strikeCount=strikeCount+1;          
+        }
+        else {
+          strikeCount=0;
+          ballCount=0;
+          updateOut();
+        }  
+        break;
+        case 1: //Caught
+        batMessage = "Caught - OUT!";
+        document.getElementById("matchTV").innerHTML = "<img src='caught.png' width='300' height='300'>";
+        strikeCount=0;
+        ballCount=0;
+
+
+        updateOut();
+        break;
+        case 2: //Single
+        batMessage = "Single";
+        document.getElementById("matchTV").innerHTML = "<img src='run.png' width='400' height='300'>";
+        strikeCount=0;
+        ballCount=0;
+        runScored=basesArray.shift();
+        basesArray.push(1);
+        showFieldStatus();
+        runnerOnBase=basesArray.reduce(sumArray);
+        //updateScore();
+        break;
+
+        case 3: //Double
+        batMessage = "Double";
+        document.getElementById("matchTV").innerHTML = "<img src='run.png' width='400' height='300'>";
+        strikeCount=0;
+        ballCount=0;
+        runScored=runScored + basesArray.shift();
+        runScored=runScored + basesArray.shift();
+        basesArray.push(1);
+        basesArray.push(0);
+        showFieldStatus();
+        runnerOnBase=basesArray.reduce(sumArray);
+        //updateScore();
+        break;
+        
+        case 4: //Tripple
+        batMessage = "Tripple";
+        document.getElementById("matchTV").innerHTML = "<img src='run.png' width='400' height='300'>";
+        strikeCount=0;
+        ballCount=0;
+        runScored=runScored + basesArray.shift();
+        runScored=runScored + basesArray.shift();
+        runScored=runScored + basesArray.shift();
+        basesArray.push(1);
+        basesArray.push(0);
+        basesArray.push(0);
+        showFieldStatus();
+        runnerOnBase=basesArray.reduce(sumArray);
+        //updateScore();
+        break;
+
+        case 5: //Home Run
+        batMessage = "!!! HOME RUN !!!";
+        document.getElementById("matchTV").innerHTML = "<img src='homerun.png' width='300' height='300'>";
+        strikeCount=0;
+        ballCount=0;
+        runScored=runScored+1;
+        runScored=runScored + basesArray.shift();
+        runScored=runScored + basesArray.shift();
+        runScored=runScored + basesArray.shift();
+        basesArray.push(0);
+        basesArray.push(0);
+        basesArray.push(0);
+        showFieldStatus();
+        runnerOnBase=basesArray.reduce(sumArray);
+        //updateScore();
+        break;
+
+        case 6: //Didn't make it to base on time
+        batMessage = "Tagged - OUT!";
+        document.getElementById("matchTV").innerHTML = "<img src='tagged.png' width='300' height='300'>";
+        strikeCount=0;
+        ballCount=0;
+        if (outCount!=2){
+          runScored=runScored + basesArray.shift();
+          basesArray.push(0);
+          showFieldStatus();
+        }
+
+        updateOut();
+        break;
+
+        case 7: //Double Play?
+        document.getElementById("matchTV").innerHTML = "<img src='doubleplay.png' width='300' height='300'>";
+          if (runnerOnBase>=1){
+            if (outCount==1){
+                batMessage = "Double Play to end Inning!";
+                strikeCount=0;
+                ballCount=0;
+                outCount=2;
+                updateOut();
+            }
+            else if(outCount==0){
+                batMessage = "Doubley Play!";
+                runScored=runScored + basesArray.shift();
+                basesArray=[0,0,0];
+                showFieldStatus();
+                outCount=1;
+                strikeCount=0;
+                ballCount=0;
+                updateOut();
+            }
+            else {
+            batMessage = "Run Out!!!";
+            strikeCount=0;
+            ballCount=0;
+            updateOut();  
+            }
+          }
+          else {
+            batMessage = "Tagged";
+            strikeCount=0;
+            ballCount=0;
+            updateOut();  
+          }
+          break;
+        case 8: //Swing and a Miss
+        batMessage = "Shwwwing and a Miss: Stttrike !!!";
+        document.getElementById("matchTV").innerHTML = "<img src='swingmiss.png' width='300' height='300'>";
+        if (strikeCount<2){
+          strikeCount=strikeCount+1;          
+        }
+        else {
+          strikeCount=0;
+          ballCount=0;
+          updateOut();
+        }  
+        break;
+        case 9: //Foul Ball
+        batMessage = "Foul Ball";
+        document.getElementById("matchTV").innerHTML = "<img src='foul.png' width='300' height='300'>";
+        if (strikeCount<2){
+          strikeCount=strikeCount+1;
+        }
+        break;
+
+        }
+      }
+      else{
+        batMessage="STRIKE!";
+        document.getElementById("matchTV").innerHTML = "<img src='strike.png' width='300' height='300'>";
+        strikeCount=strikeCount+1;
+        if (strikeCount==3){
+          strikeCount=0;
+        updateOut();
+        }
+      }
+
+    document.getElementById("batMessage").innerHTML = batMessage;
+    document.getElementById("pitchResult").innerHTML = "Balls " + ballCount + " Strikes: " + strikeCount + " Outs: " + outCount;
+    updateScore();
+    }
+
+    function updateOut(){
+      outCount=outCount+1;
+      if (outCount>=3){
+        outCount=0;
+        runnerOnBase=0;
+        if (battingTeam=="Home"){
+          if (inning<=8) {
+          battingTeam="Away";
+          document.getElementById("battingTeamLogo").innerHTML = "<img src='diamondbackslogo.jpg' width='120' height='120'>";
+          document.getElementById("battingTeamName").innerHTML = "Batting Side " + awayTeamName;
+          document.getElementById("matchTV").innerHTML = "<img src='totheplate.png' width='300' height='300'>";
+          runScoredInnings=0;
+          basesArray=[0,0,0];
+          showFieldStatus();
+          inning=inning+1;
+          awayTeamScoreByInnings.push(0);
+          topOrBottom="Top";
+          //document.getElementById("matchTV").innerHTML = "<img src='emptyfield.gif' width='400' height='300'>";
+          }
+          else if(inning>8){
+            if (homeTeamScoreByInnings.reduce(sumArray)==awayTeamScoreByInnings.reduce(sumArray)){
+              batMessage = "Extra Innings"
+              inningsArray.push(inning+1);          
+              battingTeam="Away";
+              document.getElementById("battingTeamLogo").innerHTML = "<img src='diamondbackslogo.jpg' width='120' height='120'>";
+              document.getElementById("battingTeamName").innerHTML = "Batting Side " + awayTeamName;
+              document.getElementById("matchTV").innerHTML = "<img src='totheplate.png' width='300' height='300'>";
+              runScoredInnings=0;
+              basesArray=[0,0,0];
+              showFieldStatus();
+              inning=inning+1;
+              awayTeamScoreByInnings.push(0);
+              topOrBottom="Top";
+              inningsDisplay=inningsArray.join(' . ');
+              document.getElementById("innings_display").innerHTML=inningsDisplay;
+              document.getElementById("batMessage").innerHTML = batMessage;
+              updateScore();
+            }
+            else {
+              batMessage = "Away Team Wins"
+              document.getElementById("pitchButton").disabled = true;
+              document.getElementById("batMessage").innerHTML = batMessage;
+            }  
+            }
+          }
+
+        else{
+          battingTeam="Home";
+          document.getElementById("battingTeamLogo").innerHTML = "<img src='bluejays.png' width='120' height='120'>";
+          document.getElementById("battingTeamName").innerHTML = "Batting Side " + homeTeamName;
+          topOrBottom="Bottom";
+          basesArray=[0,0,0];
+          showFieldStatus();
+          document.getElementById("matchTV").innerHTML = "<img src='totheplate.png' width='300' height='300'>";
+          runScoredInnings=0;
+          //homeTeamScoreByInnings.push(0);
+          //document.getElementById("matchTV").innerHTML = "<img src='emptyfield.gif' width='400' height='300'>";
+        }
+      }
+    }
+
+    function updateScore(){
+      document.getElementById("batMessage2").innerHTML="Runs Scored: " + runScored;
+      runScoredInnings=runScoredInnings+runScored;
+      runScored=0;
+      if (battingTeam=="Home"){
+      homeTeamScoreByInnings[inning-1]=runScoredInnings;
+        if((homeTeamScoreByInnings.reduce(sumArray)>awayTeamScoreByInnings.reduce(sumArray)) && inning>=9){
+          batMessage = "Home Team Wins"
+              document.getElementById("pitchButton").disabled = true;
+              document.getElementById("batMessage").innerHTML = batMessage;
+        }
+      }
+      else if(battingTeam=="Away"){
+        awayTeamScoreByInnings[inning-1]=runScoredInnings;
+      }
+      homeTeamScoreByInningsDisplay=homeTeamScoreByInnings.join(' . ');
+      awayTeamScoreByInningsDisplay=awayTeamScoreByInnings.join(' . ');
+      document.getElementById("homeTeam_scoreByInnings").innerHTML=homeTeamScoreByInningsDisplay;
+      document.getElementById("awayTeam_scoreByInnings").innerHTML=awayTeamScoreByInningsDisplay;
+      document.getElementById("currentSetting").innerHTML = homeTeamName + " - vs - " + awayTeamName + " , " + "Inning = " + topOrBottom + " of " + inning + " Bases: " +basesArray;
+      document.getElementById("home_score").innerHTML = homeTeamScoreByInnings.reduce(sumArray);
+      document.getElementById("away_score").innerHTML = awayTeamScoreByInnings.reduce(sumArray);
+    }
+    
+    function sumArray(total, num) {
+        return total + num;
+    }
+
+    function showFieldStatus(){
+      if (basesArray.join()==[0,0,0]){
+        document.getElementById("fieldStatus").innerHTML = "<img src='emptyfield.jpg' width='300' height='300'>";
+      }
+      if (basesArray.join()==[0,0,1]){
+        document.getElementById("fieldStatus").innerHTML = "<img src='1st.png' width='300' height='300'>";
+      }   
+      if (basesArray.join()==[0,1,0]){
+        document.getElementById("fieldStatus").innerHTML = "<img src='2nd.png' width='300' height='300'>";
+      }
+      if (basesArray.join()==[1,0,0]){
+        document.getElementById("fieldStatus").innerHTML = "<img src='3rd.png' width='300' height='300'>";
+      }
+      if (basesArray.join()==[0,1,1]){
+        document.getElementById("fieldStatus").innerHTML = "<img src='1st2nd.png' width='300' height='300'>";
+      }
+      if (basesArray.join()==[1,1,0]){
+        document.getElementById("fieldStatus").innerHTML = "<img src='2nd3rd.png' width='300' height='300'>";
+      }
+      if (basesArray.join()==[1,0,1]){
+        document.getElementById("fieldStatus").innerHTML = "<img src='1st3rd.png' width='300' height='300'>";
+      }
+      if (basesArray.join()==[1,1,1]){
+        document.getElementById("fieldStatus").innerHTML = "<img src='1st2nd3rd.png' width='300' height='300'>";
+      }      
+    }
+    </script>
+</body>
+</html>
